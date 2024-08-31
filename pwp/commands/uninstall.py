@@ -3,7 +3,7 @@ import sys
 from pip._internal.cli.main import main as pip_main
 
 
-def update_requirements(packages: dict[str, str|None]):
+def update_requirements(packages: dict[str, str | None]):
     requirements_file = 'requirements.txt'
 
     if os.path.exists(requirements_file):
