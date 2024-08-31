@@ -7,8 +7,7 @@ def update_requirements(packages: dict[str, str | None]):
     requirements_file = 'requirements.txt'
 
     if os.path.exists(requirements_file):
-        with open(requirements_file, 'r') as f:
-            lines = f.readlines()
+        with open(requirements_file, 'r') as lines:
             existing_packages = dict()
             for line in lines:
                 line = line.strip()
