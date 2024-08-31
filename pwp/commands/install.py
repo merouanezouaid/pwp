@@ -2,6 +2,7 @@ import os
 import sys
 from pip._internal.cli.main import main as pip_main
 import importlib.metadata
+from .utils import load_packages, dump_packages
 
 
 def get_installed_package_version(package_name):
@@ -16,15 +17,7 @@ def create_or_update_requirements(packages: dict[str, str | None]):
     requirements_file = 'requirements.txt'
 
     if os.path.exists(requirements_file):
-        with open(requirements_file, 'r') as lines:
-            existing_packages = {}
-            for line in lines:
-                line = line.strip()
-                if "==" not in line:
-                    existing_packages[line] = None
-                else:
-                    name, version = line.split("==")
-                    existing_packages[name] = version
+        existing_packages = load_packages(requirements_file)
     else:
         existing_packages = {}
 
@@ -37,13 +30,7 @@ def create_or_update_requirements(packages: dict[str, str | None]):
         elif package not in existing_packages:
             updated_packages[package] = None
 
-    with open(requirements_file, 'w') as f:
-        f.write(
-            "\n".join([
-                f"{package}=={version}" if version else f"{package}"
-                for package, version in updated_packages.items()
-            ])
-        )
+    dump_packages(updated_packages, requirements_file)
 
     added_or_updated = [f"{pkg}=={ver}" if ver else pkg for pkg, ver in packages.items()]
     print(f"Updated {requirements_file} with {', '.join(added_or_updated)}")

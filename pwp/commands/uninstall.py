@@ -1,34 +1,21 @@
 import os
 import sys
 from pip._internal.cli.main import main as pip_main
+from .utils import load_packages, dump_packages
 
 
 def update_requirements(packages: dict[str, str | None]):
     requirements_file = 'requirements.txt'
 
     if os.path.exists(requirements_file):
-        with open(requirements_file, 'r') as lines:
-            existing_packages = dict()
-            for line in lines:
-                line = line.strip()
-                if "==" not in line:
-                    existing_packages[line] = None
-                else:
-                    name, version = line.split("==")
-                    existing_packages[name] = version
+        existing_packages = load_packages(requirements_file)
 
         packages_to_remove = set(packages) & set(existing_packages)
         remaining_packages = {
             pkg: ver for pkg, ver in existing_packages.items() if pkg not in packages_to_remove
         }
 
-        with open(requirements_file, 'w') as f:
-            f.write(
-                "\n".join([
-                    f"{package}=={version}" if version else f"{package}"
-                    for package, version in remaining_packages.items()
-                ])
-            )
+        dump_packages(remaining_packages, requirements_file)
 
         if packages_to_remove:
             print(f"Removed {', '.join(packages_to_remove)} from {requirements_file}")
