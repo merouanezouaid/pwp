@@ -34,7 +34,6 @@ setup(
     author_email='kaito.collabs@gmail.com',
     description='a pip wrapper that automatically manages requirements.txt',
     long_description=open('README.md').read(),
-    packages=find_packages(),
     long_description_content_type='text/markdown',
     url='https://github.com/merouanezouaid/pwp',
     classifiers=[
