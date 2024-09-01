@@ -1,16 +1,7 @@
 import os
 import sys
 from pip._internal.cli.main import main as pip_main
-import importlib.metadata
-from .utils import load_packages, dump_packages
-
-
-def get_installed_package_version(package_name):
-    """Get the installed version of a package."""
-    try:
-        return importlib.metadata.version(package_name)
-    except importlib.metadata.PackageNotFoundError:
-        return None
+from .utils import load_packages, dump_packages, get_installed_package_version
 
 
 def create_or_update_requirements(packages: dict[str, str | None]):
@@ -32,8 +23,15 @@ def create_or_update_requirements(packages: dict[str, str | None]):
 
     dump_packages(updated_packages, requirements_file)
 
-    added_or_updated = [f"{pkg}=={ver}" if ver else pkg for pkg, ver in packages.items()]
-    print(f"Updated {requirements_file} with {', '.join(added_or_updated)}")
+    new_packages = [
+        f"{pkg}=={ver}" if ver else pkg for pkg, ver in packages.items()
+        if pkg not in existing_packages or existing_packages[pkg] != ver
+    ]
+
+    if new_packages:
+        print(f"Updated {requirements_file} with {', '.join(new_packages)}")
+    else:
+        print(f"All libraries already exist in {requirements_file}. No updates made.")
 
 
 def pwp_install():
@@ -50,8 +48,12 @@ def pwp_install():
     pip_main(['install'] + packages)
 
     # Retrieve the installed versions if --v flag is present, else set versions to None
-    installed_packages = {
-        pkg: get_installed_package_version(pkg) if include_version else None for pkg in packages
-    }
+    installed_packages = {}
+    for package in packages:
+        name = package.split("==")[0]
+        if "==" in package or include_version:
+            installed_packages[name] = get_installed_package_version(name)
+        else:
+            installed_packages[name] = None
 
     create_or_update_requirements(installed_packages)
