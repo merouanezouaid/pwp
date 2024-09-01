@@ -1,16 +1,12 @@
 import os
-import sys
 from pip._internal.cli.main import main as pip_main
-from .utils import load_packages, dump_packages, get_installed_package_version
+from .utils import load_packages, dump_packages, get_installed_package_version, format_packages, filter_packages
 
 
 def create_or_update_requirements(packages: dict[str, str | None]):
     requirements_file = 'requirements.txt'
 
-    if os.path.exists(requirements_file):
-        existing_packages = load_packages(requirements_file)
-    else:
-        existing_packages = {}
+    existing_packages = load_packages(requirements_file) if os.path.exists(requirements_file) else {}
 
     updated_packages = existing_packages.copy()
 
@@ -23,13 +19,13 @@ def create_or_update_requirements(packages: dict[str, str | None]):
 
     dump_packages(updated_packages, requirements_file)
 
-    new_packages = [
-        f"{pkg}=={ver}" if ver else pkg for pkg, ver in packages.items()
-        if pkg not in existing_packages or existing_packages[pkg] != ver
-    ]
+    new_packages = filter_packages(
+        packages=packages,
+        condition=lambda pkg, ver: pkg not in existing_packages or existing_packages[pkg] != ver
+    )
 
     if new_packages:
-        print(f"Updated {requirements_file} with {', '.join(new_packages)}")
+        print(f"Updated {requirements_file} with {', '.join(format_packages(new_packages))}")
     else:
         print(f"All libraries already exist in {requirements_file}. No updates made.")
 
