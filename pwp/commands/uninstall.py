@@ -1,7 +1,19 @@
+import argparse
 import os
 import sys
 from pip._internal.cli.main import main as pip_main
 from .utils import load_packages, dump_packages, get_installed_package_version, format_packages, filter_packages
+
+
+# Function to create the argument parser for the uninstall command
+def get_uninstall_parser():
+    parser = argparse.ArgumentParser(description="Uninstall Python packages.", add_help=False)
+    parser.add_argument(
+        'packages',
+        nargs='+',
+        help="List of packages to uninstall."
+    )
+    return parser
 
 
 def update_requirements(packages: dict[str, str | None]):
@@ -36,12 +48,7 @@ def update_requirements(packages: dict[str, str | None]):
         print(f"{requirements_file} not found")
 
 
-def pwp_uninstall():
-    if len(sys.argv) < 3:
-        print("Usage: pwp uninstall <package_name1> [<package_name2> ...]")
-        return
-
-    packages = sys.argv[2:]
+def pwp_uninstall(packages):
     pip_main(['uninstall', '-y'] + packages)
 
     # Convert package names to a dictionary <name, version>

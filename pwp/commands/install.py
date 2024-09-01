@@ -1,6 +1,22 @@
+import argparse
 import os
 from pip._internal.cli.main import main as pip_main
 from .utils import load_packages, dump_packages, get_installed_package_version, format_packages, filter_packages
+
+
+def get_install_parser():
+    parser = argparse.ArgumentParser(description="Install Python packages.", add_help=False)
+    parser.add_argument(
+        'packages',
+        nargs='+',
+        help="List of packages to install."
+    )
+    parser.add_argument(
+        '--v',
+        action='store_true',
+        help="Include package versions in the output."
+    )
+    return parser
 
 
 def create_or_update_requirements(packages: dict[str, str | None]):
@@ -30,17 +46,7 @@ def create_or_update_requirements(packages: dict[str, str | None]):
         print(f"All libraries already exist in {requirements_file}. No updates made.")
 
 
-def pwp_install():
-    if len(sys.argv) < 3:
-        print("Usage: pwp install <package_name1> [<package_name2> ...] [--v]")
-        return
-
-    packages = sys.argv[2:]
-    include_version = '--v' in packages
-
-    if include_version:
-        packages.remove('--v')
-
+def pwp_install(packages, include_version):
     pip_main(['install'] + packages)
 
     # Retrieve the installed versions if --v flag is present, else set versions to None
