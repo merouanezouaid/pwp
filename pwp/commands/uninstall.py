@@ -48,7 +48,8 @@ def update_requirements(packages: dict[str, str | None]):
         print(f"{requirements_file} not found")
 
 
-def pwp_uninstall(packages):
+def pwp_uninstall(args):
+    packages = args.packages
     pip_main(['uninstall', '-y'] + packages)
 
     # Convert package names to a dictionary <name, version>

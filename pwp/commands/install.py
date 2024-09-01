@@ -46,7 +46,8 @@ def create_or_update_requirements(packages: dict[str, str | None]):
         print(f"All libraries already exist in {requirements_file}. No updates made.")
 
 
-def pwp_install(packages, include_version):
+def pwp_install(args):
+    packages, include_version = args.packages, args.v
     pip_main(['install'] + packages)
 
     # Retrieve the installed versions if --v flag is present, else set versions to None

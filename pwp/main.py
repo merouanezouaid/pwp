@@ -36,9 +36,9 @@ def main():
     args = parser.parse_args()
 
     if args.command == 'install':
-        pwp_install(args.packages, args.v)
+        pwp_install(args)
     elif args.command == 'uninstall':
-        pwp_uninstall(args.packages)
+        pwp_uninstall(args)
     else:
         parser.print_help()
 
