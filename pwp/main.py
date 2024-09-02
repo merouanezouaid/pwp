@@ -1,107 +1,47 @@
-import os
-import sys
-from pip._internal.cli.main import main as pip_main
+import argparse
+from .commands.install import get_install_parser, pwp_install
+from .commands.uninstall import get_uninstall_parser, pwp_uninstall
 
-def create_or_update_requirements(package_names, action='install'):
-    requirements_file = 'requirements.txt'
-    
-    if action == 'install':
-        if not os.path.exists(requirements_file):
-            with open(requirements_file, 'w') as f:
-                for package in package_names:
-                    f.write(f"{package}\n")
-            print(f"Created {requirements_file} and added {', '.join(package_names)}")
-        else:
-            with open(requirements_file, 'r') as f:
-                existing_packages = set(line.strip() for line in f)
-            
-            new_packages = [pkg for pkg in package_names if pkg not in existing_packages]
-            
-            if new_packages:
-                with open(requirements_file, 'a') as f:
-                    for package in new_packages:
-                        f.write(f"{package}\n")
-                print(f"Added {', '.join(new_packages)} to {requirements_file}")
-            
-            existing = set(package_names) & existing_packages
-            if existing:
-                print(f"Packages already in {requirements_file}: {', '.join(existing)}")
-    
-    elif action == 'uninstall':
-        if os.path.exists(requirements_file):
-            with open(requirements_file, 'r') as f:
-                packages = set(line.strip() for line in f)
-            
-            packages_to_remove = set(package_names) & packages
-            remaining_packages = packages - packages_to_remove
-            
-            with open(requirements_file, 'w') as f:
-                for package in remaining_packages:
-                    f.write(f"{package}\n")
-            
-            if packages_to_remove:
-                print(f"Removed {', '.join(packages_to_remove)} from {requirements_file}")
-            
-            not_found = set(package_names) - packages
-            if not_found:
-                print(f"Packages not found in {requirements_file}: {', '.join(not_found)}")
-        else:
-            print(f"{requirements_file} not found")
 
-def pwp_install():
-    if len(sys.argv) < 3:
-        print("Usage: pwp install <package_name1> [<package_name2> ...]")
-        return
+ascii_art = r"""
+    ░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░  
+    ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
+    ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
+    ░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░  
+    ░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░        
+    ░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░        
+    ░▒▓█▓▒░       ░▒▓█████████████▓▒░░▒▓█▓▒░
+"""
 
-    package_names = sys.argv[2:]
-    pip_main(['install'] + package_names)
-    create_or_update_requirements(package_names, 'install')
-
-def pwp_uninstall():
-    if len(sys.argv) < 3:
-        print("Usage: pwp uninstall <package_name1> [<package_name2> ...]")
-        return
-
-    package_names = sys.argv[2:]
-    pip_main(['uninstall', '-y'] + package_names)
-    create_or_update_requirements(package_names, 'uninstall')
 
 def main():
-    if len(sys.argv) < 2:
-    
-        welcome_message = r"""
+    # Set up the main argument parser
+    parser = argparse.ArgumentParser(
+        description=f"{ascii_art}\nPip With Packages - by Kaito\n\nThanks for installing PWP!\n",
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog="Enjoy managing your packages with ease!"
+    )
 
-    ░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░  
-    ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
-    ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
-    ░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░  
-    ░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░        
-    ░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░        
-    ░▒▓█▓▒░       ░▒▓█████████████▓▒░░▒▓█▓▒░        
-                                                
-                                                    
-    Pip With Packages - by Kaito
-    
-    Thanks for installing PWP!
-    Usage:
-        pwp install <package1> [<package2> ...]
-        pwp uninstall <package1> [<package2> ...]
-    
-    Enjoy managing your packages with ease!
-        """
-        print(welcome_message)
-        
+    # Create subparsers for 'install' and 'uninstall'
+    subparsers = parser.add_subparsers(dest='command', help="Command to execute")
 
-        return
+    # Install parser imported from install.py
+    install_parser = get_install_parser()
+    subparsers.add_parser('install', parents=[install_parser], help="Install packages")
 
-    command = sys.argv[1]
+    # Uninstall parser imported from uninstall.py
+    uninstall_parser = get_uninstall_parser()
+    subparsers.add_parser('uninstall', parents=[uninstall_parser], help="Uninstall packages")
 
-    if command == 'install':
-        pwp_install()
-    elif command == 'uninstall':
-        pwp_uninstall()
+    args = parser.parse_args()
+
+    if args.command == 'install':
+        pwp_install(args)
+    elif args.command == 'uninstall':
+        pwp_uninstall(args)
     else:
-        print(f"Unknown command: {command}")
+        parser.print_help()
+
 
 if __name__ == "__main__":
     main()
