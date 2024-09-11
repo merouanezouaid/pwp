@@ -1,5 +1,5 @@
     
-### Pip With Packages (pwp) - by Kaito
+### PIP With Packages (pwp) - by Kaito
   
 Thanks for installing PWP!
   
