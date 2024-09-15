@@ -1,7 +1,7 @@
     
 ### PIP With Packages (pwp) - by Kaito
   
-Thanks for installing PWP!
+Thanks for installing pwp!
   
 #### Usage:
     pwp install <package1> [<package2> ...]
